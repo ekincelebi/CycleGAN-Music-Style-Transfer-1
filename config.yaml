@@ -1,0 +1,45 @@
+arch:
+  model: 'base'                   # three different models, base, partial, full
+  type: 'cyclegan'                # cyclegan or classifier
+  ngf: 64                         # num of gen filters in first conv layer
+  ndf: 64                         # num of discri filters in first conv layer
+  input_nc: 1                     # num of input image channels
+  output_nc: 1                    # num of output image channels
+  L1_lambda: 10.0                 # weight on L1 term in objective
+  gamma: 1.0                      # weight of extra discriminators
+  use_midi_G: false               # select generator for midinet
+  use_midi_D: false               # select disciminator for midinet
+  use_lsgan: false                # gan loss defined in lsgan
+  max_size: 50                    # max size of image pool, 0 means do not use image pool
+  sigma_c: 1.0                    # sigma of gaussian noise of classifiers
+  sigma_d: 1.0                    # sigma of gaussian noise of discriminators
+
+data:
+  dataset_dir: 'JAZZ2ROCK'        # path of the dataset
+  dataset_A_dir: 'JC_J'           # path of the dataset of domain A
+  dataset_B_dir: 'JC_C'           # path of the dataset of domain B
+
+training:
+  epoch: 100                      # num of epoch
+  epoch_step: 10                  # num of epoch to decay lr
+  batch_size: 16                  # num images in batch
+  train_size: 1e8                 # num images used to train
+  load_size: 286                  # scale images to this size
+  fine_size: 128                  # then crop to this size
+  time_step: 64                   # time step of pianoroll
+  pitch_range: 84                 # pitch range of pianoroll
+  lr: 0.0002                      # initial learning rate for adam
+  beta1: 0.5                      # momentum term of adam
+  which_direction: 'AtoB'         # AtoB or BtoA
+  phase: 'train'                  # train, test
+
+saving:
+  checkpoint_dir: './checkpoint'  # models are saved here
+  sample_dir: './samples'         # sample are saved here
+  test_dir: './test'              # test sample are saved here
+  log_dir: './log'                # logs are saved here
+  save_freq: 1000                 # save a model every save_freq iterations
+  print_freq: 100                 # print the debug information every print_freq iterations
+  continue_train: false           # if continue training, load the latest model: 1: true, 0: false
+
+
