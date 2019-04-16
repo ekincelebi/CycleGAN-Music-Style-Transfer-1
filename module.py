@@ -48,11 +48,6 @@ def generator_midinet(image, options, reuse=False, name='generator'):
         else:
             assert tf.get_variable_scope().reuse is False
 
-        # h0 = lrelu(batch_norm(conv2d(image, options.df_dim, name='g_h0_conv'), name='g_h0_conv_bn'))
-        # h1 = lrelu(batch_norm(conv2d(h0, options.df_dim * 2, name='g_h1_conv'), name='g_h1_conv_bn'))
-        # h2 = lrelu(batch_norm(conv2d(h1, options.df_dim * 4, name='g_h2_conv'), name='g_h2_conv_bn'))
-        # h3 = lrelu(batch_norm(conv2d(h2, options.df_dim * 8, name='g_h3_conv'), name='g_h3_conv_bn'))
-        # h4 = lrelu(batch_norm(conv2d(h3, options.df_dim * 16, name='g_h4_conv'), name='g_h4_conv_bn'))
         h0 = tf.nn.relu(batch_norm(linear(image, options.df_dim * 16, 'g_h0_lin'), name='g_h0_lin_bn'))
         h1 = tf.nn.relu(batch_norm(linear(h0, options.df_dim * 8, 'g_h1_lin'), name='g_h1_lin_bn'))
         h1 = tf.reshape(h1, [options.batch_size, 2, 1, options.gf_dim * 4])
@@ -60,8 +55,6 @@ def generator_midinet(image, options, reuse=False, name='generator'):
         h6 = tf.nn.relu(batch_norm(deconv2d(h5, options.df_dim * 2, [4, 1], [4, 1], name='g_h6_conv'), name='g_h6_conv_bn'))
         h7 = tf.nn.relu(batch_norm(deconv2d(h6, options.df_dim * 2, [4, 1], [4, 1], name='g_h7_conv'), name='g_h7_conv_bn'))
         h8 = tf.nn.tanh(batch_norm(deconv2d(h7, options.output_c_dim, [1, 64], [1, 64], name='g_h8_conv'), name='g_h8_conv_bn'))
-        # h9 = tf.nn.relu(batch_norm(deconv2d(h8, options.df_dim, name='g_h9_conv'), name='g_h9_conv_bn'))
-        # h10 = tf.nn.sigmoid(batch_norm(deconv2d(h9, options.output_c_dim, name='g_h10_conv'), name='g_h10_conv_bn'))
 
         return h8
 
@@ -169,22 +162,6 @@ def discriminator(image, options, reuse=False, name="discriminator"):
         else:
             assert tf.get_variable_scope().reuse is False
 
-        # h0 = lrelu(conv2d(image, options.df_dim, ks=[12, 12], s=[12, 12], name='d_h0_conv'))
-        # h1 = lrelu(instance_norm(conv2d(h0, options.df_dim*4, ks=[4, 1], s=[4, 1], name='d_h1_conv'), 'd_bn1'))
-        # h4 = conv2d(h1, 1, s=1, name='d_h3_pred')
-
-        # # input is (64 x 84 x self.df_dim)
-        # h0 = lrelu(conv2d(image, options.df_dim, ks=[1, 12], s=[1, 12], name='d_h0_conv'))
-        # # h0 is (64 x 7 x self.df_dim)
-        # h1 = lrelu(instance_norm(conv2d(h0, options.df_dim*2, ks=[2, 1], s=[2, 1], name='d_h1_conv'), 'd_bn1'))
-        # # h1 is (32 x 7 x self.df_dim*2)
-        # h2 = lrelu(instance_norm(conv2d(h1, options.df_dim*4, ks=[2, 1], s=[2, 1], name='d_h2_conv'), 'd_bn2'))
-        # # h2 is (16x 7 x self.df_dim*4)
-        # h3 = lrelu(instance_norm(conv2d(h2, options.df_dim*8, ks=[2, 1], s=[2, 1], name='d_h3_conv'), 'd_bn3'))
-        # # h3 is (8 x 7 x self.df_dim*8)
-        # h4 = conv2d(h3, 1, s=1, name='d_h3_pred')
-        # # h4 is (8 x 7 x 1)
-
         h0 = lrelu(conv2d(image, options.df_dim, name='d_h0_conv'))
         # (32, 42, 64)
         h1 = lrelu(instance_norm(conv2d(h0, options.df_dim * 4, name='d_h1_conv'), 'd_bn1'))
@@ -274,7 +251,7 @@ def generator_resnet(image, options, reuse=False, name="generator"):
             # For ks = 3, p = 1
             y = tf.pad(x, [[0, 0], [p, p], [p, p], [0, 0]], "REFLECT")
             # After first padding, (# of images * 130 * 130 * 3)
-            y = instance_norm(conv2d(y, dim, ks, s, padding='VALID', name=name+'_c1'), name+'_bn1')
+            y = instance_norm(conv2d(y, dim, ks, s, padding='VALID', name= name+'_c1'), name+'_bn1')
             # After first conv2d, (# of images * 128 * 128 * 3)
             y = tf.pad(tf.nn.relu(y), [[0, 0], [p, p], [p, p], [0, 0]], "REFLECT")
             # After second padding, (# of images * 130 * 130 * 3)
@@ -295,9 +272,6 @@ def generator_resnet(image, options, reuse=False, name="generator"):
         # c2 is (# of images * 128 * 128 * 128)
         c3 = relu(instance_norm(conv2d(c2, options.gf_dim*4, 3, 2, name='g_e3_c'), 'g_e3_bn'))
         # c3 is (# of images * 64 * 64 * 256)
-
-        # c4 = relu(instance_norm(conv2d(c3, options.gf_dim*8, 3, 3, name='g_e4_c'), 'g_e4_bn'))
-        # c5 = relu(instance_norm(conv2d(c4, options.gf_dim*16, 3, [4, 1], name='g_e5_c'), 'g_e5_bn'))
 
         # define G network with 9 resnet blocks
         r1 = residule_block(c3, options.gf_dim*4, name='g_r1')
@@ -320,9 +294,6 @@ def generator_resnet(image, options, reuse=False, name="generator"):
         # r9 is (# of images * 64 * 64 * 256)
         r10 = residule_block(r9, options.gf_dim*4, name='g_r10')
 
-        # d4 = relu(instance_norm(deconv2d(r9, options.gf_dim*8, 3, [4, 1], name='g_d4_dc'), 'g_d4_bn'))
-        # d5 = relu(instance_norm(deconv2d(d4, options.gf_dim*4, 3, 3, name='g_d5_dc'), 'g_d5_bn'))
-
         d1 = relu(instance_norm(deconv2d(r10, options.gf_dim*2, 3, 2, name='g_d1_dc'), 'g_d1_bn'))
         # d1 is (# of images * 128 * 128 * 128)
         d2 = relu(instance_norm(deconv2d(d1, options.gf_dim, 3, 2, name='g_d2_dc'), 'g_d2_bn'))
@@ -343,17 +314,6 @@ def discriminator_classifier(image, options, reuse=False, name="discriminator"):
             tf.get_variable_scope().reuse_variables()
         else:
             assert tf.get_variable_scope().reuse is False
-        # # input is 384, 84, 1
-        # h0 = lrelu(conv2d(image, options.df_dim, [12, 12], [12, 12], name='d_h0_conv'))
-        # # h0 is (32 x 7 x self.df_dim)
-        # h1 = lrelu(instance_norm(conv2d(h0, options.df_dim*2, [2, 1], [2, 1], name='d_h1_conv'), 'd_bn1'))
-        # # h1 is (16 x 7 x self.df_dim*2)
-        # h2 = lrelu(instance_norm(conv2d(h1, options.df_dim*4, [2, 1], [2, 1], name='d_h2_conv'), 'd_bn2'))
-        # # h2 is (8 x 7 x self.df_dim*4)
-        # h3 = lrelu(instance_norm(conv2d(h2, options.df_dim*8, [8, 1], [8, 1], name='d_h3_conv'), 'd_bn3'))
-        # # h3 is (1 x 7 x self.df_dim*8)
-        # h4 = conv2d(h3, 2, [1, 7], [1, 7], name='d_h3_pred')
-        # # h4 is (1 x 1 x 2)
 
         # input is 64, 84, 1
         h0 = lrelu(conv2d(image, options.df_dim, [1, 12], [1, 12], name='d_h0_conv'))

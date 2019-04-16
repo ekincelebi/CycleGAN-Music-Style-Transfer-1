@@ -4,7 +4,6 @@ import tensorflow as tf
 from model import cyclegan
 from style_classifier import Classifer
 tf.set_random_seed(19)
-os.environ["CUDA_VISIBLE_DEVICES"] = os.environ['SGE_GPU']
 
 parser = argparse.ArgumentParser(description='')
 parser.add_argument('--dataset_dir', dest='dataset_dir', default='JAZZ2ROCK', help='path of the dataset')

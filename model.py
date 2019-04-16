@@ -5,13 +5,10 @@ from shutil import copyfile
 from glob import glob
 import tensorflow as tf
 import numpy as np
-import config
 from collections import namedtuple
 from module import *
 from utils import *
 from ops import *
-from metrics import *
-os.environ["CUDA_VISIBLE_DEVICES"] = os.environ['SGE_GPU']
 
 
 class cyclegan(object):
@@ -183,10 +180,10 @@ class cyclegan(object):
         self.d_vars = [var for var in t_vars if 'discriminator' in var.name]
         self.g_vars = [var for var in t_vars if 'generator' in var.name]
         for var in t_vars:
-            print(var.name)
+            print(f'Trainable var: {var.name}')
 
     def train(self, args):
-
+        print('Training...')
         # Learning rate
         self.lr = tf.placeholder(tf.float32, None, name='learning_rate')
 
@@ -197,14 +194,13 @@ class cyclegan(object):
             self.d_optim = tf.train.AdamOptimizer(self.lr, beta1=args.beta1).minimize(self.D_loss, var_list=self.d_vars)
         self.g_optim = tf.train.AdamOptimizer(self.lr, beta1=args.beta1).minimize(self.g_loss, var_list=self.g_vars)
 
+        print('Starting session...')
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
 
         # define the path which stores the log file, format is "{A}2{B}_{date}_{model}_{sigma}".
         log_dir = './logs/{}2{}_{}_{}_{}'.format(self.dataset_A_dir, self.dataset_B_dir, self.now_datetime,
                                                  self.model, self.sigma_d)
-        # log_dir = './logs/{}2{}_{}_{}_{}'.format(self.dataset_A_dir, self.dataset_B_dir, '2018-06-10',
-        #                                          self.model, self.sigma_d)
         self.writer = tf.summary.FileWriter(log_dir, self.sess.graph)
 
         # Data from domain A and B, and mixed dataset for partial and full models.
@@ -309,11 +305,6 @@ class cyclegan(object):
                                                                                        self.now_datetime,
                                                                                        self.model,
                                                                                        self.sigma_d))
-                    # sample_dir = os.path.join(self.sample_dir, '{}2{}_{}_{}_{}'.format(self.dataset_A_dir,
-                    #                                                                    self.dataset_B_dir,
-                    #                                                                    '2018-06-10',
-                    #                                                                    self.model,
-                    #                                                                    self.sigma_d))
                     if not os.path.exists(sample_dir):
                         os.makedirs(sample_dir)
                     self.sample_model(sample_dir, epoch, idx)
@@ -325,8 +316,6 @@ class cyclegan(object):
         model_name = "cyclegan.model"
         model_dir = "{}2{}_{}_{}_{}".format(self.dataset_A_dir, self.dataset_B_dir, self.now_datetime, self.model,
                                             self.sigma_d)
-        # model_dir = "{}2{}_{}_{}_{}".format(self.dataset_A_dir, self.dataset_B_dir, '2018-06-14', self.model,
-        #                                     self.sigma_d)
         checkpoint_dir = os.path.join(checkpoint_dir, model_dir)
 
         if not os.path.exists(checkpoint_dir):
@@ -339,15 +328,12 @@ class cyclegan(object):
 
         model_dir = "{}2{}_{}_{}_{}".format(self.dataset_A_dir, self.dataset_B_dir, self.now_datetime, self.model,
                                             self.sigma_d)
-        # model_dir = "{}2{}_{}_{}_{}".format(self.dataset_A_dir, self.dataset_B_dir, '2018-06-14', self.model,
-        #                                     self.sigma_d)
         checkpoint_dir = os.path.join(checkpoint_dir, model_dir)
 
         ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
         if ckpt and ckpt.model_checkpoint_path:
             ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
             self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
-            # self.saver.restore(self.sess, os.path.join(checkpoint_dir, 'cyclegan.model-7011'))
             return True
         else:
             return False

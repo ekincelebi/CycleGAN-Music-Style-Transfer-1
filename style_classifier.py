@@ -6,7 +6,7 @@ from module import *
 from ops import *
 from utils import *
 from glob import glob
-os.environ["CUDA_VISIBLE_DEVICES"] = os.environ['SGE_GPU']
+# os.environ["CUDA_VISIBLE_DEVICES"] = os.environ['SGE_GPU']
 
 
 class Classifer(object):
