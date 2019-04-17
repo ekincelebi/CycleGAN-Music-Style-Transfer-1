@@ -1,3 +1,6 @@
+random_seed: 1234
+phase: 'train'                    # train, test
+
 arch:
   model: 'base'                   # three different models, base, partial, full
   type: 'cyclegan'                # cyclegan or classifier
@@ -23,7 +26,7 @@ training:
   epoch: 100                      # num of epoch
   epoch_step: 10                  # num of epoch to decay lr
   batch_size: 16                  # num images in batch
-  train_size: 1e8                 # num images used to train
+  train_size: 100000000           # num images used to train
   load_size: 286                  # scale images to this size
   fine_size: 128                  # then crop to this size
   time_step: 64                   # time step of pianoroll
@@ -31,7 +34,6 @@ training:
   lr: 0.0002                      # initial learning rate for adam
   beta1: 0.5                      # momentum term of adam
   which_direction: 'AtoB'         # AtoB or BtoA
-  phase: 'train'                  # train, test
 
 saving:
   checkpoint_dir: './checkpoint'  # models are saved here

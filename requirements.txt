@@ -6,3 +6,4 @@ pillow
 imageio
 pretty_midi
 pypianoroll
+pyyaml

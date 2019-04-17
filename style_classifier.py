@@ -51,11 +51,13 @@ class Classifer(object):
         self.origin_train = tf.placeholder(tf.float32, [self.batch_size, self.time_step, self.pitch_range,
                                                         self.input_c_dim])
         self.label_train = tf.placeholder(tf.float32, [self.batch_size, 2])
-        self.origin_test = tf.placeholder(tf.float32, [None, self.time_step, self.pitch_range, self.input_c_dim])
+        self.origin_test = tf.placeholder(
+            tf.float32, [None, self.time_step, self.pitch_range, self.input_c_dim])
         self.label_test = tf.placeholder(tf.float32, [None, 2])
 
         # Origin samples passed through the classifier
-        self.D_origin = self.discriminator(self.origin_train, self.options, False, name='classifier')
+        self.D_origin = self.discriminator(
+            self.origin_train, self.options, False, name='classifier')
         self.D_test = self.discriminator(self.origin_test, self.options, True, name='classifier')
 
         # Discriminator loss
@@ -64,11 +66,13 @@ class Classifer(object):
 
         # test accuracy
         self.D_test_softmax = tf.nn.softmax(self.D_test)
-        self.correct_prediction_test = tf.equal(tf.argmax(self.D_test_softmax, 1), tf.argmax(self.label_test, 1))
+        self.correct_prediction_test = tf.equal(
+            tf.argmax(self.D_test_softmax, 1), tf.argmax(self.label_test, 1))
         self.accuracy_test = tf.reduce_mean(tf.cast(self.correct_prediction_test, tf.float32))
 
         # test midi
-        self.test_midi = tf.placeholder(tf.float32, [None, self.time_step, self.pitch_range, self.input_c_dim])
+        self.test_midi = tf.placeholder(
+            tf.float32, [None, self.time_step, self.pitch_range, self.input_c_dim])
         self.test_result = self.discriminator(self.test_midi, self.options, True, name='classifier')
         self.test_result_softmax = tf.nn.softmax(self.test_result)
 
@@ -83,7 +87,8 @@ class Classifer(object):
         self.lr = tf.placeholder(tf.float32, None, name='learning_rate')
 
         # Optimizer
-        self.d_optim = tf.train.AdamOptimizer(self.lr, beta1=args.beta1).minimize(self.d_loss, var_list=self.d_vars)
+        self.d_optim = tf.train.AdamOptimizer(
+            self.lr, beta1=args.beta1).minimize(self.d_loss, var_list=self.d_vars)
 
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
@@ -137,7 +142,8 @@ class Classifer(object):
             batch_idx = len(training_list) // self.batch_size
 
             # learning rate would decay after certain epochs
-            lr = args.lr if epoch < args.epoch_step else args.lr * (args.epoch-epoch) / (args.epoch-args.epoch_step)
+            lr = args.lr if epoch < args.epoch_step else args.lr * \
+                (args.epoch - epoch) / (args.epoch - args.epoch_step)
 
             for idx in range(batch_idx):
 
@@ -204,7 +210,8 @@ class Classifer(object):
                                                                                     self.sigma_d,
                                                                                     self.now_datetime,
                                                                                     args.which_direction))
-        sample_files_origin.sort(key=lambda x: int(os.path.splitext(os.path.basename(x))[0].split('_')[0]))
+        sample_files_origin.sort(key=lambda x: int(
+            os.path.splitext(os.path.basename(x))[0].split('_')[0]))
 
         # load the origin samples in npy format and sorted in ascending order
         sample_files_transfer = glob('./test/{}2{}_{}_{}_{}/{}/npy/transfer/*.*'.format(self.dataset_A_dir,
@@ -213,7 +220,8 @@ class Classifer(object):
                                                                                         self.sigma_d,
                                                                                         self.now_datetime,
                                                                                         args.which_direction))
-        sample_files_transfer.sort(key=lambda x: int(os.path.splitext(os.path.basename(x))[0].split('_')[0]))
+        sample_files_transfer.sort(key=lambda x: int(
+            os.path.splitext(os.path.basename(x))[0].split('_')[0]))
 
         # load the origin samples in npy format and sorted in ascending order
         sample_files_cycle = glob('./test/{}2{}_{}_{}_{}/{}/npy/cycle/*.*'.format(self.dataset_A_dir,
@@ -222,7 +230,8 @@ class Classifer(object):
                                                                                   self.sigma_d,
                                                                                   self.now_datetime,
                                                                                   args.which_direction))
-        sample_files_cycle.sort(key=lambda x: int(os.path.splitext(os.path.basename(x))[0].split('_')[0]))
+        sample_files_cycle.sort(key=lambda x: int(
+            os.path.splitext(os.path.basename(x))[0].split('_')[0]))
 
         # put the origin, transfer and cycle of the same phrase in one zip
         sample_files = list(zip(sample_files_origin, sample_files_transfer, sample_files_cycle))
@@ -277,9 +286,12 @@ class Classifer(object):
                 count_cycle += 1 if np.argmax(test_result_cycle[0]) == 0 else 0
 
                 # create paths for origin, transfer and cycle samples attached with probability
-                path_origin = os.path.join(test_dir_mid, '{}_origin_{}.mid'.format(idx + 1, test_result_origin[0][0]))
-                path_transfer = os.path.join(test_dir_mid, '{}_transfer_{}.mid'.format(idx + 1, test_result_transfer[0][0]))
-                path_cycle = os.path.join(test_dir_mid, '{}_cycle_{}.mid'.format(idx + 1, test_result_cycle[0][0]))
+                path_origin = os.path.join(test_dir_mid, '{}_origin_{}.mid'.format(
+                    idx + 1, test_result_origin[0][0]))
+                path_transfer = os.path.join(test_dir_mid, '{}_transfer_{}.mid'.format(
+                    idx + 1, test_result_transfer[0][0]))
+                path_cycle = os.path.join(test_dir_mid, '{}_cycle_{}.mid'.format(
+                    idx + 1, test_result_cycle[0][0]))
 
             else:
                 line_list.append((idx + 1, content_diff, origin_transfer_diff[0][1], test_result_origin[0][1],
@@ -291,9 +303,12 @@ class Classifer(object):
                 count_cycle += 1 if np.argmax(test_result_cycle[0]) == 1 else 0
 
                 # create paths for origin, transfer and cycle samples attached with probability
-                path_origin = os.path.join(test_dir_mid, '{}_origin_{}.mid'.format(idx + 1, test_result_origin[0][1]))
-                path_transfer = os.path.join(test_dir_mid, '{}_transfer_{}.mid'.format(idx + 1, test_result_transfer[0][1]))
-                path_cycle = os.path.join(test_dir_mid, '{}_cycle_{}.mid'.format(idx + 1, test_result_cycle[0][1]))
+                path_origin = os.path.join(test_dir_mid, '{}_origin_{}.mid'.format(
+                    idx + 1, test_result_origin[0][1]))
+                path_transfer = os.path.join(test_dir_mid, '{}_transfer_{}.mid'.format(
+                    idx + 1, test_result_transfer[0][1]))
+                path_cycle = os.path.join(test_dir_mid, '{}_cycle_{}.mid'.format(
+                    idx + 1, test_result_cycle[0][1]))
 
             # generate sample MIDI files
             save_midis(sample_origin, path_origin)
@@ -313,14 +328,17 @@ class Classifer(object):
         accuracy_origin = count_origin * 1.0 / len(sample_files)
         accuracy_transfer = count_transfer * 1.0 / len(sample_files)
         accuracy_cycle = count_cycle * 1.0 / len(sample_files)
-        print('Accuracy of this classifier on test datasets is :', accuracy_origin, accuracy_transfer, accuracy_cycle)
+        print('Accuracy of this classifier on test datasets is :',
+              accuracy_origin, accuracy_transfer, accuracy_cycle)
 
     def test_famous(self, args):
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
 
-        song_o = np.load('./datasets/famous_songs/C2J/merged_npy/Scenes from Childhood (Schumann).npy')
-        song_t = np.load('./datasets/famous_songs/C2J/transfer/Scenes from Childhood (Schumann).npy')
+        song_o = np.load(
+            './datasets/famous_songs/C2J/merged_npy/Scenes from Childhood (Schumann).npy')
+        song_t = np.load(
+            './datasets/famous_songs/C2J/transfer/Scenes from Childhood (Schumann).npy')
         print(song_o.shape, song_t.shape)
 
         if self.load(args.checkpoint_dir):
@@ -335,10 +353,12 @@ class Classifer(object):
         for idx in range(song_t.shape[0]):
             phrase_o = song_o[idx]
             phrase_o = phrase_o.reshape(1, phrase_o.shape[0], phrase_o.shape[1], 1)
-            origin = self.sess.run(self.test_result_softmax, feed_dict={self.test_midi: phrase_o * 2. - 1.})
+            origin = self.sess.run(self.test_result_softmax, feed_dict={
+                                   self.test_midi: phrase_o * 2. - 1.})
             phrase_t = song_t[idx]
             phrase_t = phrase_t.reshape(1, phrase_t.shape[0], phrase_t.shape[1], 1)
-            transfer = self.sess.run(self.test_result_softmax, feed_dict={self.test_midi: phrase_t * 2. - 1.})
+            transfer = self.sess.run(self.test_result_softmax, feed_dict={
+                                     self.test_midi: phrase_t * 2. - 1.})
 
             sum_o_A += origin[0][0]
             sum_o_B += origin[0][1]
@@ -347,4 +367,3 @@ class Classifer(object):
 
         print("origin, source:", sum_o_A / song_t.shape[0], "target:", sum_o_B / song_t.shape[0])
         print("transfer, source:", sum_t_A / song_t.shape[0], "target:", sum_t_B / song_t.shape[0])
-
