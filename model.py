@@ -184,29 +184,35 @@ class CycleGan(object):
         self.DA_fake = self.discriminator(self.fake_A + self.gaussian_noise, self.options,
                                           reuse=False, name="discriminatorA")
         # Discriminator: Real
-        self.DA_real = self.discriminator(self.real_A + self.gaussian_noise, self.options, reuse=True,
-                                          name="discriminatorA")
-        self.DB_real = self.discriminator(self.real_B + self.gaussian_noise, self.options, reuse=True,
-                                          name="discriminatorB")
+        self.DA_real = self.discriminator(self.real_A + self.gaussian_noise, self.options,
+                                          reuse=True, name="discriminatorA")
+        self.DB_real = self.discriminator(self.real_B + self.gaussian_noise, self.options,
+                                          reuse=True, name="discriminatorB")
 
-        self.fake_A_sample = tf.placeholder(tf.float32, [self.batch_size, self.time_step, self.pitch_range,
-                                                         self.input_c_dim], name='fake_A_sample')
-        self.fake_B_sample = tf.placeholder(tf.float32, [self.batch_size, self.time_step, self.pitch_range,
-                                                         self.input_c_dim], name='fake_B_sample')
+        self.fake_A_sample = tf.placeholder(
+            tf.float32, [self.batch_size, self.time_step, self.pitch_range, self.input_c_dim],
+            name='fake_A_sample')
+        self.fake_B_sample = tf.placeholder(
+            tf.float32, [self.batch_size, self.time_step, self.pitch_range, self.input_c_dim],
+            name='fake_B_sample')
         self.DA_fake_sample = self.discriminator(self.fake_A_sample + self.gaussian_noise,
                                                  self.options, reuse=True, name="discriminatorA")
         self.DB_fake_sample = self.discriminator(self.fake_B_sample + self.gaussian_noise,
                                                  self.options, reuse=True, name="discriminatorB")
         if self.model != 'base':
             # Discriminator: All
-            self.DA_real_all = self.discriminator(self.real_mixed + self.gaussian_noise, self.options, reuse=False,
-                                                  name="discriminatorA_all")
-            self.DA_fake_sample_all = self.discriminator(self.fake_A_sample + self.gaussian_noise,
-                                                         self.options, reuse=True, name="discriminatorA_all")
-            self.DB_real_all = self.discriminator(self.real_mixed + self.gaussian_noise, self.options, reuse=False,
-                                                  name="discriminatorB_all")
-            self.DB_fake_sample_all = self.discriminator(self.fake_B_sample + self.gaussian_noise,
-                                                         self.options, reuse=True, name="discriminatorB_all")
+            self.DA_real_all = self.discriminator(
+                self.real_mixed + self.gaussian_noise,
+                self.options, reuse=False, name="discriminatorA_all")
+            self.DA_fake_sample_all = self.discriminator(
+                self.fake_A_sample + self.gaussian_noise,
+                self.options, reuse=True, name="discriminatorA_all")
+            self.DB_real_all = self.discriminator(
+                self.real_mixed + self.gaussian_noise,
+                self.options, reuse=False, name="discriminatorB_all")
+            self.DB_fake_sample_all = self.discriminator(
+                self.fake_B_sample + self.gaussian_noise,
+                self.options, reuse=True, name="discriminatorB_all")
         # Generator loss
         self.cycle_loss = self.L1_lambda * abs_criterion(self.real_A, self.fake_A_) \
             + self.L1_lambda * abs_criterion(self.real_B, self.fake_B_)
@@ -257,13 +263,15 @@ class CycleGan(object):
         if self.model != 'base':
             self.d_all_loss_sum = tf.summary.scalar("d_all_loss", self.d_all_loss)
             self.D_loss_sum = tf.summary.scalar("D_loss", self.d_loss)
-            self.d_sum = tf.summary.merge([self.da_loss_sum, self.da_loss_real_sum, self.da_loss_fake_sum,
-                                           self.db_loss_sum, self.db_loss_real_sum, self.db_loss_fake_sum,
-                                           self.d_loss_sum, self.d_all_loss_sum, self.D_loss_sum])
+            self.d_sum = tf.summary.merge(
+                [self.da_loss_sum, self.da_loss_real_sum, self.da_loss_fake_sum,
+                 self.db_loss_sum, self.db_loss_real_sum, self.db_loss_fake_sum,
+                 self.d_loss_sum, self.d_all_loss_sum, self.D_loss_sum])
         else:
-            self.d_sum = tf.summary.merge([self.da_loss_sum, self.da_loss_real_sum, self.da_loss_fake_sum,
-                                           self.db_loss_sum, self.db_loss_real_sum, self.db_loss_fake_sum,
-                                           self.d_loss_sum])
+            self.d_sum = tf.summary.merge([
+                self.da_loss_sum, self.da_loss_real_sum, self.da_loss_fake_sum,
+                self.db_loss_sum, self.db_loss_real_sum, self.db_loss_fake_sum,
+                self.d_loss_sum])
 
         # Test
         self.test_A = tf.placeholder(tf.float32, [None, self.time_step, self.pitch_range,
@@ -355,16 +363,21 @@ class CycleGan(object):
                 batch_images = np.array(batch_images).astype(np.float32)
 
                 # To feed gaussian noise
-                gaussian_noise = np.abs(np.random.normal(0, self.sigma_d, [self.batch_size, self.time_step,
-                                                                         self.pitch_range, self.input_c_dim]))
+                gaussian_noise = np.abs(np.random.normal(
+                    0, self.sigma_d,
+                    [self.batch_size, self.time_step, self.pitch_range, self.input_c_dim]))
 
                 if self.model == 'base':
 
                     # Update G network and record fake outputs
-                    fake_A, fake_B, _, summary_str, g_loss_a2b, g_loss_b2a, cycle_loss, g_loss = self.sess.run([self.fake_A,
-                        self.fake_B, self.g_optim, self.g_sum, self.g_loss_a2b, self.g_loss_b2a, self.cycle_loss,
-                        self.g_loss], feed_dict={self.real_data: batch_images, self.gaussian_noise: gaussian_noise,
-                                                 self.lr: lr})
+                    (fake_A, fake_B, _, summary_str, g_loss_a2b,
+                     g_loss_b2a, cycle_loss, g_loss) = self.sess.run(
+                    [self.fake_A, self.fake_B, self.g_optim, self.g_sum, self.g_loss_a2b,
+                     self.g_loss_b2a, self.cycle_loss, self.g_loss],
+                    feed_dict={
+                        self.real_data: batch_images,
+                        self.gaussian_noise: gaussian_noise,
+                        self.lr: lr})
 
                     # Update D network
                     _, summary_str, da_loss, db_loss, d_loss = self.sess.run([
